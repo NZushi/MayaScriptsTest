@@ -1,0 +1,45 @@
+//Camera Export to UE4
+string $selections[] = `ls -sl`;
+for($sel in $selections){
+	string $shpetype[] = `listRelatives -s $sel`;
+	if(objectType($shpetype[0])=="camera"){
+    	print("  !!--selcamera->"+ $sel +"\n");
+    	string $cameraName[] = `camera -centerOfInterest 5 -focalLength 35 -lensSqueezeRatio 1
+    	 -cameraScale 1 -horizontalFilmAperture 1.41732 -horizontalFilmOffset 0 -verticalFilmAperture 0.94488
+    	  -verticalFilmOffset 0 -filmFit Fill -overscan 1 -motionBlur 0 -shutterAngle 144 -nearClipPlane 0.1
+    	   -farClipPlane 10000 -orthographic 0 -orthographicWidth 30 -panZoomEnabled 0 -horizontalPan 0 -verticalPan 0 -zoom 1`;
+		print("  !!--selcamera->"+ $cameraName[0] +" -shp- "+ $cameraName[1] +"\n");
+		rename $cameraName[0] ("exp_"+ $sel);
+		parentConstraint $sel ("exp_"+ $sel);
+		string $expShpeType[] = `listRelatives -s ("exp_"+ $sel)`;
+		expression -s ($expShpeType[0]+".focalLength = "+ $shpetype[0] +".focalLength") ;
+		//project
+		string $projectPath = `workspace -q -rd`;
+		print("  !!--> "+ $projectPath +"\n");
+		string $fbxPath = $projectPath +"\fbx";
+		//fbx
+		//frame Fit　フレームをクリップのフレームに合わせる。
+		int $motMin = `playbackOptions -q -min`;
+		int $motMax = `playbackOptions -q -max`;
+		//FBXオプションの設定
+		if(`FBXExportBakeComplexAnimation -q`){}else{FBXExportBakeComplexAnimation -v true;} //AnimationBake
+		FBXExportBakeComplexStart -v $motMin; //アニメーションのスタートフレームを入力
+		FBXExportBakeComplexEnd -v $motMax; //アニメーションのエンドフレームを入力
+		//fbx folder make
+		if(`filetest -d $fbxPath`){
+			print("  ##-- Fbx Folder Allredy!\n");
+			//export
+			select -r ("exp_"+ $sel) ;
+			file -force -options "v=0;" -typ "FBX export" -pr -es ($fbxPath +"/camera.fbx") ;
+		}else{
+			print("  ##-- Fbx Folder No!!\n");
+			//make fbx folder
+			sysFile -md $fbxPath ;
+			//export
+			select -r ("exp_"+ $sel) ;
+			file -force -options "v=0;" -typ "FBX export" -pr -es ($fbxPath +"/camera.fbx") ;
+		}
+		delete ("exp_"+ $sel);
+		//file -force -options "v=0;" -typ "FBX export" -pr -es "Z:/mv01/maya/movie/cut01/camera_cut01.fbx";
+    }
+}
