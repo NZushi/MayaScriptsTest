@@ -1,0 +1,12 @@
+if(`window -q -ex "window1"`)deleteUI("window1");
+window -title "testwin" -menuBar true "window1";
+tabLayout "tabLayout4";
+columnLayout ;
+button ;
+button ;
+textField ;
+text -label "konnnitiwa";
+columnLayout -parent "tabLayout4";
+columnLayout -parent "tabLayout4";
+tabLayout  -e -tabLabelIndex  1 "tab" -tabLabelIndex  2 "test" -tabLabelIndex  3 "go" "tabLayout4";
+showWindow "window1";
